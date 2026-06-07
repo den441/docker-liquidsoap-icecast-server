@@ -7,8 +7,12 @@ import sys
 from pathlib import Path
 
 
+def workspace_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
 def load_env() -> None:
-    env_path = Path(__file__).resolve().parent.parent / ".env"
+    env_path = workspace_root() / ".env"
     if not env_path.exists():
         return
     for line in env_path.read_text(encoding="utf-8").splitlines():

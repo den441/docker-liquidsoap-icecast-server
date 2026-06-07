@@ -1,14 +1,14 @@
 ---
 name: sending-telegram-notifications
-description: Sends text, images, and documents to the user through a configured Telegram bot. Use when the user asks to notify them in Telegram, send files or screenshots to Telegram, deliver results via TG bot, or when finishing work and Telegram delivery was requested.
+description: Sends and receives text, images, and documents through a configured Telegram bot. Use when the user asks to notify them in Telegram, send or receive files via TG bot, work with a Telegram agent dialog, or deliver results through Telegram.
 compatibility: Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env, network access, and python3 with requests.
 ---
 
-# Sending Telegram Notifications
+# Telegram Agent Dialog
 
-Use this skill when the user wants messages or attachments delivered to Telegram.
+Use this skill when the user interacts with the project through a Telegram bot: send results, or receive photos/files/instructions from the user.
 
-## Before sending
+## Before using Telegram
 
 1. Ensure `/workspace/.env` exists with:
    - `TELEGRAM_BOT_TOKEN`
@@ -20,7 +20,36 @@ Use this skill when the user wants messages or attachments delivered to Telegram
    - run `python3 scripts/telegram-setup.py` to save chat id
 3. Do not commit `.env` or expose tokens in chat, commits, or PRs.
 
-## Send commands
+## Receive files from the user
+
+When the user sends a photo, document, or text to the bot and asks the agent to process it:
+
+```bash
+# Download everything new since the last run
+python3 scripts/telegram-receive.py
+
+# Wait up to 2 minutes for a new message from the user
+python3 scripts/telegram-receive.py --wait --timeout 120 --ack
+
+# Show pending updates without downloading
+python3 scripts/telegram-receive.py --dry-run
+
+# Get the latest downloaded file path
+python3 scripts/telegram-receive.py --latest
+```
+
+Files are saved to `input/telegram/` by default. Each file has a `.meta.json` sidecar with caption and message text.
+
+Agent workflow for tasks like photo editing:
+
+1. Ask the user to send the file to the Telegram bot if it is not in the workspace yet.
+2. Run `python3 scripts/telegram-receive.py --wait --timeout 120 --ack`.
+3. Use the printed file path as input for processing.
+4. Send the result back with `telegram-send.py`.
+
+Only messages from `TELEGRAM_CHAT_ID` are accepted.
+
+## Send messages and files
 
 Text only:
 
@@ -49,6 +78,7 @@ python3 scripts/telegram-send.py "**Done**" --parse-mode Markdown
 
 ## Agent behavior
 
+- If the user refers to a file sent in Telegram, run `telegram-receive.py` before saying the file is missing.
 - Prefer Telegram when the user explicitly asks for TG delivery or ongoing Telegram updates.
 - Attach generated images, exported files, logs, or reports when they are part of the deliverable.
 - Keep Telegram messages concise; put long details in attached documents when needed.
