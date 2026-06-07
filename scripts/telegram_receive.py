@@ -47,8 +47,12 @@ class ReceivedItem:
         return json.dumps(payload, ensure_ascii=False)
 
 
-def _api_base(token: str) -> str:
+def api_base(token: str) -> str:
     return f"https://api.telegram.org/bot{token}"
+
+
+def _api_base(token: str) -> str:
+    return api_base(token)
 
 
 def _load_offset() -> int | None:

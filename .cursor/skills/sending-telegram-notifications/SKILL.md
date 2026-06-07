@@ -76,8 +76,35 @@ Optional formatting:
 python3 scripts/telegram-send.py "**Done**" --parse-mode Markdown
 ```
 
+## Troubleshooting
+
+If the user sent a file but nothing happened:
+
+```bash
+python3 scripts/telegram-doctor.py
+```
+
+Common causes:
+
+1. `.env` is missing or incomplete — the bot cannot connect without `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
+2. Nothing is polling Telegram automatically — run `telegram-receive.py` or start `telegram-watch.py`.
+3. The message came from another Telegram account — only `TELEGRAM_CHAT_ID` is accepted.
+
+After fixing `.env`, download pending files with:
+
+```bash
+python3 scripts/telegram-receive.py --ack
+```
+
+For continuous receiving while working:
+
+```bash
+python3 scripts/telegram-watch.py --ack
+```
+
 ## Agent behavior
 
+- If the user says they sent a file in Telegram, run `telegram-doctor.py`, then `telegram-receive.py --ack`.
 - If the user refers to a file sent in Telegram, run `telegram-receive.py` before saying the file is missing.
 - Prefer Telegram when the user explicitly asks for TG delivery or ongoing Telegram updates.
 - Attach generated images, exported files, logs, or reports when they are part of the deliverable.
