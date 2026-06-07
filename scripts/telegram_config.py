@@ -11,11 +11,10 @@ def workspace_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
-def load_env() -> None:
-    env_path = workspace_root() / ".env"
-    if not env_path.exists():
+def _load_env_file(path: Path) -> None:
+    if not path.exists():
         return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -23,6 +22,12 @@ def load_env() -> None:
         key = key.strip()
         value = value.strip().strip('"').strip("'")
         os.environ.setdefault(key, value)
+
+
+def load_env() -> None:
+    root = workspace_root()
+    _load_env_file(root / ".env")
+    _load_env_file(root / ".env.local")
 
 
 def require_config() -> tuple[str, str]:
